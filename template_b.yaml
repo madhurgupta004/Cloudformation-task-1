@@ -33,7 +33,19 @@ Resources:
             Statement:
               - Effect: Allow
                 Action: ec2:*  
-                Resource: "*"     
+                Resource: "*"    
+              - Effect: Allow
+                Action: 
+                  - iam:ListInstanceProfiles
+                  - iam:GettanceProfiles   
+                Resource: 
+                  - arn:aws:iam::891377219026:instance-profile/
+                  - arn:aws:iam::891377219026:instance-profile/bat-license-to-put-ip
+              - Effect: Allow
+                Action: 
+                  - iam:GetRole
+                  - iam:Passrole    
+                Resource: arn:aws:iam::891377219026:role/bat-license-to-put  
 
   TaskRole:
     Type: AWS::IAM::Role
