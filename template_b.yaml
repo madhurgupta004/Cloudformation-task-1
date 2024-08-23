@@ -1,0 +1,61 @@
+Resources:
+  grantAdminRole:
+    Type: AWS::IAM::Role
+    Properties: 
+      RoleName: role-for-admin-access
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Action: sts:AssumeRole
+            Principal: 
+              AWS: arn:aws:iam::010438466608:user/Clark
+      Policies: 
+        - PolicyName: admin-access-policy-for-clark
+          PolicyDocument: 
+            Statement: 
+              - Effect: Allow
+                Action: "*"
+                Resource: "*"
+
+  grantEC2FullAccessRole:
+    Type: AWS::IAM::Role
+    Properties: 
+      RoleName: role-for-ec2-access
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Action: sts:AssumeRole
+            Principal:
+              AWS: arn:aws:iam::010438466608:user/Bruce
+      Policies:
+        - PolicyName: ec2-access-policy-for-bruce  
+          PolicyDocument: 
+            Statement:
+              - Effect: Allow
+                Action: ec2:*  
+                Resource: "*"     
+
+  TaskRole:
+    Type: AWS::IAM::Role
+    Properties: 
+      RoleName: bat-license-to-put
+      AssumeRolePolicyDocument: 
+        Statement: 
+          - Effect: Allow
+            Action: sts:AssumeRole
+            Principal: 
+              Service: ec2.amazonaws.com    
+      Policies:
+        - PolicyName: s3-write-only-policy
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action: sts:AssumeRole
+                Resource: arn:aws:iam::010438467788:role/s3-write-only-role     
+
+  InstanceProfileBatLicense:
+    Type: AWS::IAM::InstanceProfile
+    Properties: 
+      InstanceProfileName: bat-license-to-put-ip
+      Roles: 
+        - Ref: TaskRole              

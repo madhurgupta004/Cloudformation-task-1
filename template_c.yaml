@@ -1,0 +1,84 @@
+Resources:
+  GrantAdminRole:
+    Type: AWS::IAM::Role
+    Properties: 
+      RoleName: role-for-admin-access
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow 
+            Action: sts:AssumeRole
+            Principal:
+              AWS: arn:aws:iam::010438466608:user/Clark
+      Policies: 
+        - PolicyName: admin-access-policy-for-clark
+          PolicyDocument: 
+            Statement: 
+              - Effect: Allow
+                Action: "*"
+                Resource: "*"
+
+  ReadOnlyRoleS3:
+    Type: AWS::IAM::Role
+    Properties: 
+      RoleName: s3-read-only-role
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Action: sts:AssumeRole
+            Principal: 
+              AWS: arn:aws:iam::010438466608:user/Bruce
+      Policies:
+        - PolicyName: s3-read-only-policy
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action: 
+                  - s3:Get*
+                  - s3:List*
+                Resource: 
+                  - arn:aws:s3:::task-bucket-account-c
+                  - arn:aws:s3:::task-bucket-account-c/*  
+
+  WriteOnlyRoleS3:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: s3-write-only-role
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Action: sts:AssumeRole
+            Principal: 
+              AWS: arn:aws:iam::891377219026:role/bat-license-to-put
+      Policies:
+        - PolicyName: s3-write-only-policy
+          PolicyDocument: 
+            Statement:
+              - Effect: Allow
+                Action: 
+                  - s3:Put*
+                  - s3:List*
+                Resource: 
+                  - arn:aws:s3:::task-bucket-account-c  
+                  - arn:aws:s3:::task-bucket-account-c/*  
+
+  TaskBucket:
+    Type: AWS::S3::Bucket
+    Properties: 
+      BucketName: task-bucket-account-c
+
+  TaskBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    DependsOn: TaskBucket
+    Properties: 
+      Bucket: 
+        Ref: TaskBucket 
+      PolicyDocument: 
+        Statement:
+          - Action: 
+              - s3:Get*
+              - s3:List*
+            Effect: Allow
+            Resource: arn:aws:s3:::task-bucket-account-c/*
+            Principal:
+              AWS: arn:aws:iam::010438466608:user/Bruce
+

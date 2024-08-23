@@ -1,0 +1,55 @@
+Resources: 
+  UserClark:
+    Type: AWS::IAM::User 
+    Properties:
+      LoginProfile:
+        Password: Password1!
+      UserName: Clark
+      ManagedPolicyArns: 
+        - arn:aws:iam::aws:policy/AdministratorAccess
+
+  ClarkPolicy:
+    Type: AWS::IAM::UserPolicy
+    DependsOn: UserClark
+    Properties: 
+      PolicyName: user-policy-for-clark
+      UserName: 
+        Ref: UserClark
+      PolicyDocument: 
+        Statement:
+          - Effect: Allow
+            Action: sts:AssumeRole
+            Resource: arn:aws:iam::891377219026:role/role-for-admin-access
+          - Effect: Allow
+            Action: sts:AssumeRole
+            Resource: arn:aws:iam::010438467788:role/role-for-admin-access  
+
+  UserBruce:
+    Type: AWS::IAM::User
+    Properties: 
+      UserName: Bruce 
+      LoginProfile: 
+        Password: Password1!
+
+  BrucePolicy:
+    Type: AWS::IAM::UserPolicy
+    DependsOn: UserBruce
+    Properties: 
+      PolicyName: user-policy-for-bruce
+      UserName: 
+        Ref: UserBruce
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Action: sts:AssumeRole
+            Resource: arn:aws:iam::891377219026:role/role-for-ec2-access   
+          - Effect: Allow
+            Action: sts:AssumeRole
+            Resource: arn:aws:iam::010438467788:role/s3-read-only-role  
+          - Effect: Allow
+            Action: iam:PassRole
+            Resource: arn:aws:iam::891377219026:role/bat-license-to-put
+          - Effect: Allow  
+            Action: iam:PassRole
+            Resource: arn:aws:iam::891377219026:instance-profile/bat-license-to-put-ip
+        
