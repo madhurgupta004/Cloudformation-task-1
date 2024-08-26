@@ -1,9 +1,33 @@
+Parameters:
+  ClarkPassword:
+    Description: Set password for user Clark
+    Type: String
+    NoEcho: True
+    MinLength: 8
+    AllowedPattern: ^[a-zA-Z0-9]*$
+
+  BrucePassword:
+    Description: Set password for user Bruce
+    Type: String
+    NoEcho: True
+    MinLength: 8
+    AllowedPattern: ^[a-zA-Z0-9]*$
+
+  AccountBID:
+    Description: Acccount B's ID (Make sure that you upload template_b in this account)  
+    Type: String
+
+  AccountCID:
+    Description: Acccount C's ID (Make sure that you upload template_c in this account)  
+    Type: String   
+
+
 Resources: 
   UserClark:
     Type: AWS::IAM::User 
     Properties:
       LoginProfile:
-        Password: Password1!
+        Password: !Ref ClarkPassword
       UserName: Clark
       ManagedPolicyArns: 
         - arn:aws:iam::aws:policy/AdministratorAccess
@@ -19,17 +43,21 @@ Resources:
         Statement:
           - Effect: Allow
             Action: sts:AssumeRole
-            Resource: arn:aws:iam::891377219026:role/role-for-admin-access
+            Resource: !Sub 
+              - arn:aws:iam::${acc_b_id}:role/role-for-admin-access
+              - acc_b_id: !Ref AccountBID
           - Effect: Allow
             Action: sts:AssumeRole
-            Resource: arn:aws:iam::010438467788:role/role-for-admin-access  
+            Resource: !Sub 
+              - arn:aws:iam::${acc_c_id}:role/role-for-admin-access
+              - acc_c_id: !Ref AccountCID
 
   UserBruce:
     Type: AWS::IAM::User
     Properties: 
       UserName: Bruce 
       LoginProfile: 
-        Password: Password1!
+        Password: !Ref BrucePassword
 
   BrucePolicy:
     Type: AWS::IAM::UserPolicy
@@ -42,14 +70,18 @@ Resources:
         Statement:
           - Effect: Allow
             Action: sts:AssumeRole
-            Resource: arn:aws:iam::891377219026:role/role-for-ec2-access   
+            Resource: !Sub
+              - arn:aws:iam::${acc_b_id}:role/role-for-ec2-access   
+              - acc_b_id: !Ref AccountBID
           - Effect: Allow
             Action: sts:AssumeRole
-            Resource: arn:aws:iam::010438467788:role/s3-read-only-role  
-          - Effect: Allow
-            Action: iam:PassRole
-            Resource: arn:aws:iam::891377219026:role/bat-license-to-put
-          - Effect: Allow  
-            Action: iam:PassRole
-            Resource: arn:aws:iam::891377219026:instance-profile/bat-license-to-put-ip
+            Resource: !Sub 
+              - arn:aws:iam::${acc_c_id}:role/s3-read-only-role  
+              - acc_c_id: !Ref AccountCID
         
+
+Outputs:
+  AccountIDofB:
+    Value: !Ref AccountBID
+  AccountIDofC:
+    Value: !Ref AccountCID

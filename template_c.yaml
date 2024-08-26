@@ -1,3 +1,13 @@
+Parameters:
+  AccountAID:
+    Description: Acccount A's ID (Make sure that you upload template_a in this account)  
+    Type: String
+
+  AccountBID:
+    Description: Acccount B's ID (Make sure that you upload template_b in this account)  
+    Type: String   
+
+
 Resources:
   GrantAdminRole:
     Type: AWS::IAM::Role
@@ -8,9 +18,11 @@ Resources:
           - Effect: Allow 
             Action: sts:AssumeRole
             Principal:
-              AWS: arn:aws:iam::010438466608:user/Clark
+              AWS: !Sub 
+                - arn:aws:iam::${acc_a_id}:user/Clark
+                - acc_a_id: !Ref AccountAID
       Policies: 
-        - PolicyName: admin-access-policy-for-clark
+        - PolicyName: admin-access-policy
           PolicyDocument: 
             Statement: 
               - Effect: Allow
@@ -26,7 +38,9 @@ Resources:
           - Effect: Allow
             Action: sts:AssumeRole
             Principal: 
-              AWS: arn:aws:iam::010438466608:user/Bruce
+              AWS: !Sub 
+                - arn:aws:iam::${acc_a_id}:user/Bruce
+                - acc_a_id: !Ref AccountAID
       Policies:
         - PolicyName: s3-read-only-policy
           PolicyDocument:
@@ -48,7 +62,9 @@ Resources:
           - Effect: Allow
             Action: sts:AssumeRole
             Principal: 
-              AWS: arn:aws:iam::891377219026:role/bat-license-to-put
+              AWS: !Sub 
+                - arn:aws:iam::${acc_b_id}:role/bat-license-to-put
+                - acc_b_id: !Ref AccountBID
       Policies:
         - PolicyName: s3-write-only-policy
           PolicyDocument: 
@@ -66,19 +82,19 @@ Resources:
     Properties: 
       BucketName: task-bucket-account-c
 
-  TaskBucketPolicy:
-    Type: AWS::S3::BucketPolicy
-    DependsOn: TaskBucket
-    Properties: 
-      Bucket: 
-        Ref: TaskBucket 
-      PolicyDocument: 
-        Statement:
-          - Action: 
-              - s3:Get*
-              - s3:List*
-            Effect: Allow
-            Resource: arn:aws:s3:::task-bucket-account-c/*
-            Principal:
-              AWS: arn:aws:iam::010438466608:user/Bruce
+Outputs:
+  AdminRole:
+    Description: Name of role which grants admin permissions to Clark
+    Value: !Ref GrantAdminRole
 
+  ReadOnlyS3:
+    Description: Name of role which grants s3 bucket read only permissions to Bruce
+    Value: !Ref ReadOnlyRoleS3
+
+  WriteOnlyS3:
+    Description: Name of the role which grants s3 bucket write only permissions to role bat-license-to-put
+    Value: !Ref WriteOnlyRoleS3  
+    
+  BucketName:
+    Description: Name of the s3 bucket
+    Value: !Ref TaskBucket  
