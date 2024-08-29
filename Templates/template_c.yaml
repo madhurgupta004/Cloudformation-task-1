@@ -97,4 +97,4 @@ Outputs:
     
   BucketName:
     Description: Name of the s3 bucket
-    Value: !Ref TaskBucket  
+    Value: !Ref TaskBucket
