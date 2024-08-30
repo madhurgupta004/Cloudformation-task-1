@@ -1,0 +1,5 @@
+template-file-path: Templates/template_b.yaml
+parameters:
+  AccountAID: '010438466608'
+  AccountCID: '010438467788'
+tags: {}

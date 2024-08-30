@@ -1,0 +1,7 @@
+template-file-path: Templates/template_a.yaml
+parameters:
+  ClarkPassword: 'Password12'
+  BrucePassword: 'Password12'
+  AccountBID: '891377219026'
+  AccountCID: '010438467788'
+tags: {}

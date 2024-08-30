@@ -1,0 +1,99 @@
+Parameters:
+  AccountAID:
+    Description: Acccount A's ID (Make sure that you upload template_a in this account)  
+    Type: String
+
+  AccountCID:
+    Description: Acccount C's ID (Make sure that you upload template_c in this account)  
+    Type: String   
+
+
+Resources:
+  grantAdminRole:
+    Type: AWS::IAM::Role
+    Properties: 
+      RoleName: role-for-admin-access
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Action: sts:AssumeRole
+            Principal: 
+              AWS: !Sub 
+                - arn:aws:iam::${acc_a_id}:user/Clark
+                - acc_a_id: !Ref AccountAID
+      Policies: 
+        - PolicyName: admin-access-policy
+          PolicyDocument: 
+            Statement: 
+              - Effect: Allow
+                Action: "*"
+                Resource: "*"
+
+  grantEC2FullAccessRole:
+    Type: AWS::IAM::Role
+    Properties: 
+      RoleName: role-for-ec2-access
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Action: sts:AssumeRole
+            Principal:
+              AWS: !Sub
+                - arn:aws:iam::${acc_a_id}:user/Bruce
+                - acc_a_id: !Ref AccountAID
+      Policies:
+        - PolicyName: ec2-access-policy
+          PolicyDocument: 
+            Statement:
+              - Effect: Allow
+                Action: ec2:*  
+                Resource: "*"    
+              - Effect: Allow
+                Action: 
+                  - iam:ListInstanceProfiles
+                  - iam:GetInstanceProfiles   
+                Resource: 
+                  - !Sub arn:aws:iam::${AWS::AccountId}:instance-profile/
+                  - !Sub arn:aws:iam::${AWS::AccountId}:instance-profile/bat-license-to-put-ip
+              - Effect: Allow
+                Action: 
+                  - iam:GetRole
+                  - iam:Passrole    
+                Resource: !Sub arn:aws:iam::${AWS::AccountId}:role/bat-license-to-put  
+
+  TaskRole:
+    Type: AWS::IAM::Role
+    Properties: 
+      RoleName: bat-license-to-put
+      AssumeRolePolicyDocument: 
+        Statement: 
+          - Effect: Allow
+            Action: sts:AssumeRole
+            Principal: 
+              Service: ec2.amazonaws.com    
+      Policies:
+        - PolicyName: s3-write-only-policy
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action: sts:AssumeRole
+                Resource: !Sub 
+                  - arn:aws:iam::${acc_c_id}:role/s3-write-only-role  
+                  - acc_c_id: !Ref AccountCID
+
+  InstanceProfileBatLicense:
+    Type: AWS::IAM::InstanceProfile
+    Properties: 
+      InstanceProfileName: bat-license-to-put-ip
+      Roles: 
+        - !Ref TaskRole
+
+
+Outputs:
+  AdminRole:
+    Description: Name of role which grants admin permissions to Clark
+    Value: !Ref grantAdminRole
+
+  EC2Role:
+    Description: Name of role which grants all ec2 permissions to Bruce
+    Value: !Ref grantEC2FullAccessRole

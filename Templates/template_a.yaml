@@ -1,0 +1,87 @@
+Parameters:
+  ClarkPassword:
+    Description: Set password for user Clark
+    Type: String
+    NoEcho: True
+    MinLength: 8
+    AllowedPattern: ^[a-zA-Z0-9]*$
+
+  BrucePassword:
+    Description: Set password for user Bruce
+    Type: String
+    NoEcho: True
+    MinLength: 8
+    AllowedPattern: ^[a-zA-Z0-9]*$
+
+  AccountBID:
+    Description: Acccount B's ID (Make sure that you upload template_b in this account)  
+    Type: String
+
+  AccountCID:
+    Description: Acccount C's ID (Make sure that you upload template_c in this account)  
+    Type: String   
+
+
+Resources: 
+  UserClark:
+    Type: AWS::IAM::User 
+    Properties:
+      LoginProfile:
+        Password: !Ref ClarkPassword
+      UserName: Clark
+      ManagedPolicyArns: 
+        - arn:aws:iam::aws:policy/AdministratorAccess
+
+  ClarkPolicy:
+    Type: AWS::IAM::UserPolicy
+    DependsOn: UserClark
+    Properties: 
+      PolicyName: user-policy-for-clark
+      UserName: 
+        Ref: UserClark
+      PolicyDocument: 
+        Statement:
+          - Effect: Allow
+            Action: sts:AssumeRole
+            Resource: !Sub 
+              - arn:aws:iam::${acc_b_id}:role/role-for-admin-access
+              - acc_b_id: !Ref AccountBID
+          - Effect: Allow
+            Action: sts:AssumeRole
+            Resource: !Sub 
+              - arn:aws:iam::${acc_c_id}:role/role-for-admin-access
+              - acc_c_id: !Ref AccountCID
+
+  UserBruce:
+    Type: AWS::IAM::User
+    Properties: 
+      UserName: Bruce 
+      LoginProfile: 
+        Password: !Ref BrucePassword
+
+  BrucePolicy:
+    Type: AWS::IAM::UserPolicy
+    DependsOn: UserBruce
+    Properties: 
+      PolicyName: user-policy-for-bruce
+      UserName: 
+        Ref: UserBruce
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Action: sts:AssumeRole
+            Resource: !Sub
+              - arn:aws:iam::${acc_b_id}:role/role-for-ec2-access   
+              - acc_b_id: !Ref AccountBID
+          - Effect: Allow
+            Action: sts:AssumeRole
+            Resource: !Sub 
+              - arn:aws:iam::${acc_c_id}:role/s3-read-only-role  
+              - acc_c_id: !Ref AccountCID
+        
+
+Outputs:
+  AccountIDofB:
+    Value: !Ref AccountBID
+  AccountIDofC:
+    Value: !Ref AccountCID
